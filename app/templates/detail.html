@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engine Monitor - Detail</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --mint: #2ec4b6;
+      --mint-dark: #1fa99a;
+      --mint-soft: #e8fbf8;
+      --bg: #f6fbfa;
+      --card: #ffffff;
+      --border: #dbeceb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --shadow: 0 10px 28px rgba(31, 41, 55, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .layout {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, var(--mint-dark), var(--mint));
+      color: #fff;
+      padding: 22px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .brand {
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 18px;
+    }
+
+    .brand h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .brand p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0.95;
+    }
+
+    .nav-link {
+      display: block;
+      width: 100%;
+      border: none;
+      border-radius: 14px;
+      padding: 14px 16px;
+      background: rgba(255,255,255,0.14);
+      color: #fff;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: left;
+      text-decoration: none;
+      margin-bottom: 10px;
+    }
+
+    .nav-link.active,
+    .nav-link:hover {
+      background: #fff;
+      color: var(--mint-dark);
+    }
+
+    .sidebar-note {
+      margin-top: auto;
+      background: rgba(255,255,255,0.14);
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .content {
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .title h2 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    .title p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pill {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      box-shadow: var(--shadow);
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .stack {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    .panel-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .panel-head h3 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+
+    .panel-head p {
+      margin: 6px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .toolbar-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .rt-toolbar {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    select {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 14px;
+      outline: none;
+      min-width: 120px;
+    }
+
+    .btn, .rt-btn {
+      border: none;
+      border-radius: 12px;
+      padding: 10px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: var(--mint);
+      color: #fff;
+    }
+
+    .rt-btn.toggle {
+      background: var(--mint);
+      color: #fff;
+      min-width: 54px;
+      font-size: 18px;
+      padding: 10px 14px;
+    }
+
+    .rt-btn.reset {
+      background: var(--warning);
+      color: #fff;
+    }
+
+    .note {
+      background: var(--mint-soft);
+      border: 1px solid #ccefeb;
+      border-radius: 14px;
+      padding: 12px 14px;
+      color: var(--mint-dark);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.5;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .mini-card {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: linear-gradient(180deg, #fff, #fbfefe);
+    }
+
+    .mini-card .label {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .mini-card .value {
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    .triple-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .metric-box {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      background: #fff;
+    }
+
+    .metric-box h4 {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      font-weight: 800;
+      letter-spacing: .05em;
+    }
+
+    .metric-box .big {
+      font-size: 24px;
+      font-weight: 800;
+    }
+
+    .section-note {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .sensor-wrap {
+      max-height: 360px;
+      overflow-y: auto;
+      padding-right: 6px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 10px;
+      background: #fcfefe;
+    }
+
+    .ops-compact {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .ops-compact .sensor-realtime-card {
+      padding: 10px 12px;
+    }
+
+    .ops-compact .sensor-realtime-chart {
+      height: 48px;
+    }
+
+    .ops-compact .sensor-realtime-chart canvas {
+      height: 48px !important;
+    }
+
+    .sensor-realtime-grid,
+    .ops-like-sensor-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 12px;
+    }
+
+    .sensor-realtime-card {
+      border: 1px solid var(--border);
+      background: linear-gradient(180deg, #ffffff, #fbfefe);
+      border-radius: 16px;
+      padding: 12px 14px;
+    }
+
+    .sensor-realtime-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .sensor-realtime-name {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .sensor-realtime-sub {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-top: 2px;
+      letter-spacing: .05em;
+    }
+
+    .sensor-realtime-value {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      white-space: nowrap;
+    }
+
+    .sensor-realtime-chart {
+      width: 100%;
+      height: 56px;
+    }
+
+    .sensor-realtime-chart canvas {
+      width: 100% !important;
+      height: 56px !important;
+    }
+
+    .log-box {
+      max-height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .log-item {
+      background: #f9fefe;
+      border-left: 4px solid var(--mint);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .loading-text {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+   .small-chart-box {
+  min-height: 280px;
+  padding-bottom: 20px;
+}
+
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+}
+
+.chart-wrap canvas {
+  width: 100% !important;
+  height: 220px !important;
+  display: block;
+}
+    @media (max-width: 1200px) {
+      .mini-grid, .triple-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .detail-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; }
+      .mini-grid, .triple-grid { grid-template-columns: 1fr; }
+      .sensor-realtime-head { flex-direction: column; align-items: flex-start; }
+      .sensor-realtime-value { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>Engine AI Monitor</h1>
+       
+      </div>
+
+      <div>
+        <a class="nav-link" href="/">Trang chủ</a>
+        <a class="nav-link active" href="/detail">Chi tiết engine</a>
+      </div>
+
+      <div class="sidebar-note">
+        <div><strong>RUL:</strong> chỉ chạy khi bấm nút</div>
+        <div><strong>AE:</strong> chạy theo từng cycle</div>
+        <div><strong>Speed mặc định:</strong> 30 giây</div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="topbar">
+        <div class="title">
+          <h2>Chi tiết engine</h2>
+          
+        </div>
+        <div class="pill">Engine hiện tại: <strong id="currentEngineTitle">Chưa chọn</strong></div>
+      </div>
+
+      <div class="detail-grid">
+        <div class="stack">
+          <div class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3>Điều khiển mô phỏng</h3>
+              
+              </div>
+              <div class="toolbar-group">
+                <select id="engineSelect">
+                  <option value="">-- Chọn engine --</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="toolbar-group" style="justify-content:space-between;gap:14px;flex-wrap:wrap;">
+              <div class="rt-toolbar">
+                <button class="rt-btn toggle" id="toggleBtn">▶</button>
+                <button class="rt-btn reset" id="resetBtn">🔄 Reset</button>
+              </div>
+
+              <div class="rt-toolbar">
+                <label for="speedSelect" style="font-weight:800;color:#1f2937;">⚡ Speed control</label>
+                <select id="speedSelect">
+                  <option value="30000" selected>x1 (30 giây)</option>
+                  <option value="15000">x2</option>
+                  <option value="6000">x5</option>
+                  <option value="3000">x10</option>
+                </select>
+
+                <button class="btn btn-primary" id="predictBtn">Dự đoán RUL</button>
+              </div>
+            </div>
+
+            <div style="height:12px"></div>
+            <div class="note" id="predictNote">Hãy chọn engine để bắt đầu.</div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3>Chỉ số hiện tại</h3>
+           
+              </div>
+            </div>
+            <div class="mini-grid">
+              <div class="mini-card">
+                <div class="label">Cycle</div>
+                <div class="value" id="cycleValue">--</div>
+              </div>
+              <div class="mini-card">
+                <div class="label">Anomaly score</div>
+                <div class="value" id="anomalyScoreCard">--</div>
+              </div>
+              <div class="mini-card">
+                <div class="label">AE status</div>
+                <div class="value" id="aeStatusValue" style="font-size:26px">--</div>
+              </div>
+              <div class="mini-card">
+                <div class="label">RUL predict</div>
+                <div class="value" id="rulValue">--</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card panel">
+            <h3 style="margin:0 0 12px;font-size:18px;font-weight:800;">Operation settings</h3>
+         
+            <div class="ops-compact" id="opsGrid"></div>
+          </div>
+
+          <div class="card panel">
+            <h3 style="margin:0 0 12px;font-size:18px;font-weight:800;">Sensors realtime</h3>
+           
+            <div class="sensor-wrap">
+              <div class="sensor-realtime-grid" id="sensorGrid"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3>Anomaly / instability</h3>
+             
+              </div>
+            </div>
+            <div class="triple-grid">
+              <div class="metric-box">
+                <h4>Anomaly score</h4>
+                <div class="big" id="anomalyScore">--</div>
+              </div>
+              <div class="metric-box">
+                <h4>Warning th</h4>
+                <div class="big" id="warningTh">--</div>
+              </div>
+              <div class="metric-box">
+                <h4>Critical th</h4>
+                <div class="big" id="criticalTh">--</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card panel">
+            <div class="panel-head">
+              <div>
+                <h3>Top sensor bất thường</h3>
+              
+              </div>
+            </div>
+            <div class="log-box" id="topSensorBox"></div>
+          </div>
+
+         <div class="card panel small-chart-box">
+          <div class="panel-head">
+            <div>
+              <h3>Biểu đồ anomaly score</h3>
+              <p>Chỉ hiển thị anomaly score.</p>
+                  </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="anomalyChart"></canvas>
+          </div>
+        </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = "http://127.0.0.1:5000";
+
+    const urlParams = new URLSearchParams(window.location.search);
+    let selectedEngineId =
+      urlParams.get("engine_id") ||
+      localStorage.getItem("detail_selected_engine_id") ||
+      "";
+
+    let engines = [];
+    let timer = null;
+    let speed = 30000;
+    let engineState = {};
+    let isRunning = false;
+
+    let anomalyHistory = [];
+    let sensorHistory = {};
+    let opHistory = {};
+    let sensorCharts = {};
+    let opCharts = {};
+
+    async function fetchJSON(url, options = null) {
+      const res = await fetch(url, options);
+      return res.json();
+    }
+
+    function formatNumber(v, digits = 2) {
+      if (v === null || v === undefined || Number.isNaN(v)) return "--";
+      return Number(v).toFixed(digits);
+    }
+
+    function setToggleButtonState(running) {
+      const btn = document.getElementById("toggleBtn");
+      btn.textContent = running ? "⏸" : "▶";
+      isRunning = running;
+    }
+
+    function clearDisplay() {
+      document.getElementById("currentEngineTitle").textContent = "Chưa chọn";
+      document.getElementById("cycleValue").textContent = "--";
+      document.getElementById("anomalyScoreCard").textContent = "--";
+      document.getElementById("aeStatusValue").textContent = "--";
+      document.getElementById("rulValue").textContent = "--";
+      document.getElementById("anomalyScore").textContent = "--";
+      document.getElementById("warningTh").textContent = "--";
+      document.getElementById("criticalTh").textContent = "--";
+      document.getElementById("opsGrid").innerHTML = "";
+      document.getElementById("sensorGrid").innerHTML = "";
+      document.getElementById("topSensorBox").innerHTML = "";
+      document.getElementById("predictNote").textContent = "Hãy chọn engine để bắt đầu.";
+
+      anomalyHistory = [];
+      sensorHistory = {};
+      opHistory = {};
+      sensorCharts = {};
+      opCharts = {};
+
+      anomalyChart.data.labels = [];
+      anomalyChart.data.datasets[0].data = [];
+      anomalyChart.update();
+    }
+
+    async function loadEnginesList() {
+      engines = await fetchJSON(`${API}/engines`);
+
+      const select = document.getElementById("engineSelect");
+      select.innerHTML = `<option value="">-- Chọn engine --</option>`;
+
+      engines.forEach(e => {
+        engineState[e.engine_id] = {
+          cycle: e.cycle || 1
+        };
+
+        const opt = document.createElement("option");
+        opt.value = e.engine_id;
+        opt.textContent = `Engine ${e.engine_id}`;
+        if (String(e.engine_id) === String(selectedEngineId)) {
+          opt.selected = true;
+        }
+        select.appendChild(opt);
+      });
+    }
+
+    const anomalyChart = new Chart(document.getElementById("anomalyChart"), {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [{
+          label: "Anomaly Score",
+          data: [],
+          borderColor: "#ef4444",
+          backgroundColor: "rgba(239,68,68,0.12)",
+          borderWidth: 2,
+          tension: 0.3,
+          fill: true
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true } }
+      }
+    });
+
+    function createMiniChart(canvas, label) {
+      return new Chart(canvas, {
+        type: "line",
+        data: {
+          labels: [],
+          datasets: [{
+            label,
+            data: [],
+            borderColor: "#2ec4b6",
+            borderWidth: 2,
+            tension: 0.3,
+            pointRadius: 0
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: { legend: { display: false } },
+          scales: {
+            x: { display: false },
+            y: { display: false }
+          }
+        }
+      });
+    }
+
+    function renderRealtimeCards(containerId, dataObj, historyObj, chartsObj, namePrefix) {
+      const container = document.getElementById(containerId);
+      const keys = Object.keys(dataObj || {});
+
+      keys.forEach(key => {
+        const value = Number(dataObj[key]);
+
+        if (!historyObj[key]) historyObj[key] = [];
+        historyObj[key].push(value);
+        if (historyObj[key].length > 30) historyObj[key].shift();
+
+        let card = document.getElementById(`${namePrefix}-${key}`);
+        if (!card) {
+          card = document.createElement("div");
+          card.className = "sensor-realtime-card";
+          card.id = `${namePrefix}-${key}`;
+          card.innerHTML = `
+            <div class="sensor-realtime-head">
+              <div>
+                <div class="sensor-realtime-name">${key}</div>
+                <div class="sensor-realtime-sub">${namePrefix === "sensor" ? "Sensor realtime" : "Operation setting"}</div>
+              </div>
+              <div class="sensor-realtime-value" id="${namePrefix}-value-${key}">--</div>
+            </div>
+            <div class="sensor-realtime-chart">
+              <canvas id="${namePrefix}-canvas-${key}"></canvas>
+            </div>
+          `;
+          container.appendChild(card);
+
+          const canvas = document.getElementById(`${namePrefix}-canvas-${key}`);
+          chartsObj[key] = createMiniChart(canvas, key);
+        }
+
+        document.getElementById(`${namePrefix}-value-${key}`).textContent = formatNumber(
+          value,
+          namePrefix === "op" ? 4 : 2
+        );
+        chartsObj[key].data.labels = historyObj[key].map((_, i) => i + 1);
+        chartsObj[key].data.datasets[0].data = historyObj[key];
+        chartsObj[key].update();
+      });
+    }
+
+    function updateTopSensorBox(sensors) {
+      const box = document.getElementById("topSensorBox");
+      box.innerHTML = "";
+
+      const entries = Object.entries(sensors || {})
+        .map(([k, v]) => [k, Math.abs(Number(v))])
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+
+      if (entries.length === 0) {
+        box.innerHTML = `<div class="loading-text">Chưa có dữ liệu sensor.</div>`;
+        return;
+      }
+
+      entries.forEach(([name, value]) => {
+        const div = document.createElement("div");
+        div.className = "log-item";
+        div.innerHTML = `<strong>${name}</strong><br>Giá trị tuyệt đối hiện tại: ${formatNumber(value, 4)}`;
+        box.appendChild(div);
+      });
+    }
+
+    async function loadDetail() {
+      if (!selectedEngineId) {
+        clearDisplay();
+        return;
+      }
+
+      const currentCycle = engineState[selectedEngineId]?.cycle || 1;
+      const res = await fetchJSON(`${API}/engine/${selectedEngineId}?cycle=${currentCycle}`);
+
+      if (res.error) {
+        document.getElementById("predictNote").textContent = res.error;
+        return;
+      }
+
+      document.getElementById("currentEngineTitle").textContent = `Engine ${selectedEngineId}`;
+      document.getElementById("cycleValue").textContent = res.cycle;
+      document.getElementById("anomalyScoreCard").textContent = formatNumber(res.anomaly_score, 6);
+      document.getElementById("aeStatusValue").textContent = res.ae_status || "--";
+      document.getElementById("anomalyScore").textContent = formatNumber(res.anomaly_score, 6);
+      document.getElementById("warningTh").textContent = formatNumber(res.warning_th, 6);
+      document.getElementById("criticalTh").textContent = formatNumber(res.critical_th, 6);
+
+      if (res.anomaly_score !== null && res.anomaly_score !== undefined) {
+        anomalyHistory.push({
+          cycle: res.cycle,
+          value: res.anomaly_score
+        });
+
+        if (anomalyHistory.length > 100) anomalyHistory.shift();
+
+        anomalyChart.data.labels = anomalyHistory.map(x => x.cycle);
+        anomalyChart.data.datasets[0].data = anomalyHistory.map(x => x.value);
+        anomalyChart.update();
+
+        document.getElementById("predictNote").textContent = `Đang xem Engine ${selectedEngineId} tại cycle ${res.cycle}.`;
+      } else {
+        document.getElementById("predictNote").textContent =
+          `Anomaly chưa chạy: cần ${res.ae_seq_len} cycle, hiện tại ${res.cycle}, còn thiếu ${res.ae_remaining}.`;
+      }
+
+      renderRealtimeCards("opsGrid", res.ops, opHistory, opCharts, "op");
+      renderRealtimeCards("sensorGrid", res.sensors, sensorHistory, sensorCharts, "sensor");
+      updateTopSensorBox(res.sensors);
+    }
+
+    async function stepSimulation() {
+      if (!selectedEngineId) {
+        await stopSimulationOnly();
+        document.getElementById("predictNote").textContent = "Hãy chọn engine trước khi chạy.";
+        return;
+      }
+
+      const engineMeta = engines.find(e => String(e.engine_id) === String(selectedEngineId));
+      if (!engineMeta) return;
+
+      let currentCycle = engineState[selectedEngineId]?.cycle || 1;
+      if (currentCycle >= Number(engineMeta.max_cycle)) {
+        await stopSimulationOnly();
+        document.getElementById("predictNote").textContent = `Engine ${selectedEngineId} đã đến cycle cuối.`;
+        return;
+      }
+
+      engineState[selectedEngineId].cycle = currentCycle + 1;
+
+      await fetchJSON(`${API}/engine_state`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          engine_id: selectedEngineId,
+          running: true,
+          cycle: engineState[selectedEngineId].cycle
+        })
+      });
+
+      await loadDetail();
+    }
+
+    async function startSimulationOnly() {
+      if (!selectedEngineId) {
+        document.getElementById("predictNote").textContent = "Hãy chọn engine trước khi chạy.";
+        return;
+      }
+      if (timer) return;
+
+      await fetchJSON(`${API}/engine_state`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          engine_id: selectedEngineId,
+          running: true,
+          cycle: engineState[selectedEngineId]?.cycle || 1
+        })
+      });
+
+      timer = setInterval(stepSimulation, speed);
+      setToggleButtonState(true);
+      document.getElementById("predictNote").textContent = `Bắt đầu mô phỏng Engine ${selectedEngineId}.`;
+    }
+
+    async function stopSimulationOnly() {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+
+      if (selectedEngineId) {
+        await fetchJSON(`${API}/engine_state`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            engine_id: selectedEngineId,
+            running: false,
+            cycle: engineState[selectedEngineId]?.cycle || 1
+          })
+        });
+      }
+
+      setToggleButtonState(false);
+    }
+
+    async function toggleSimulation() {
+      if (isRunning) {
+        await stopSimulationOnly();
+        if (selectedEngineId) {
+          document.getElementById("predictNote").textContent = `Đã dừng mô phỏng Engine ${selectedEngineId}.`;
+        } else {
+          document.getElementById("predictNote").textContent = "Hãy chọn engine để bắt đầu.";
+        }
+      } else {
+        await startSimulationOnly();
+      }
+    }
+
+    async function resetSimulation() {
+      await stopSimulationOnly();
+
+      if (!selectedEngineId) {
+        clearDisplay();
+        return;
+      }
+
+      engineState[selectedEngineId] = { cycle: 1 };
+
+      await fetchJSON(`${API}/engine_state`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          engine_id: selectedEngineId,
+          reset: true
+        })
+      });
+
+      document.getElementById("opsGrid").innerHTML = "";
+      document.getElementById("sensorGrid").innerHTML = "";
+      document.getElementById("topSensorBox").innerHTML = "";
+      document.getElementById("rulValue").textContent = "--";
+
+      anomalyHistory = [];
+      sensorHistory = {};
+      opHistory = {};
+      sensorCharts = {};
+      opCharts = {};
+
+      anomalyChart.data.labels = [];
+      anomalyChart.data.datasets[0].data = [];
+      anomalyChart.update();
+
+      await loadDetail();
+      document.getElementById("predictNote").textContent = `Đã reset Engine ${selectedEngineId} về cycle 1.`;
+    }
+
+    async function predictRUL() {
+      if (!selectedEngineId) {
+        document.getElementById("predictNote").textContent = "Hãy chọn engine trước khi dự đoán RUL.";
+        return;
+      }
+
+      const currentCycle = engineState[selectedEngineId]?.cycle || 1;
+
+      const res = await fetchJSON(`${API}/predict_rul`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          engine_id: selectedEngineId,
+          cycle: currentCycle
+        })
+      });
+
+      if (res.error) {
+        document.getElementById("rulValue").textContent = "--";
+        document.getElementById("predictNote").textContent = res.error;
+        return;
+      }
+
+      document.getElementById("rulValue").textContent = formatNumber(res.rul, 2);
+      document.getElementById("predictNote").textContent = `Đã dự đoán RUL bằng ${res.model}: ${formatNumber(res.rul, 2)}.`;
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      await loadEnginesList();
+      setToggleButtonState(false);
+
+      if (selectedEngineId) {
+        if (!engineState[selectedEngineId]) {
+          engineState[selectedEngineId] = { cycle: 1 };
+        }
+        await loadDetail();
+      } else {
+        clearDisplay();
+      }
+
+      document.getElementById("engineSelect").addEventListener("change", async (e) => {
+        await stopSimulationOnly();
+
+        selectedEngineId = e.target.value;
+
+        if (!selectedEngineId) {
+          localStorage.removeItem("detail_selected_engine_id");
+          history.replaceState(null, "", `/detail`);
+          clearDisplay();
+          return;
+        }
+
+        localStorage.setItem("detail_selected_engine_id", selectedEngineId);
+
+        if (!engineState[selectedEngineId]) {
+          engineState[selectedEngineId] = { cycle: 1 };
+        }
+
+        history.replaceState(null, "", `/detail?engine_id=${encodeURIComponent(selectedEngineId)}`);
+
+        document.getElementById("opsGrid").innerHTML = "";
+        document.getElementById("sensorGrid").innerHTML = "";
+        document.getElementById("topSensorBox").innerHTML = "";
+        document.getElementById("rulValue").textContent = "--";
+
+        anomalyHistory = [];
+        sensorHistory = {};
+        opHistory = {};
+        sensorCharts = {};
+        opCharts = {};
+
+        anomalyChart.data.labels = [];
+        anomalyChart.data.datasets[0].data = [];
+        anomalyChart.update();
+
+        await loadDetail();
+      });
+
+      document.getElementById("speedSelect").addEventListener("change", (e) => {
+        speed = Number(e.target.value);
+        if (timer) {
+          clearInterval(timer);
+          timer = setInterval(stepSimulation, speed);
+        }
+      });
+
+      document.getElementById("toggleBtn").addEventListener("click", toggleSimulation);
+      document.getElementById("resetBtn").addEventListener("click", resetSimulation);
+      document.getElementById("predictBtn").addEventListener("click", predictRUL);
+    });
+  </script>
+</body>
+</html>

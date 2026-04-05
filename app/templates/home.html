@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Engine Monitor - Home</title>
+  <style>
+    :root {
+      --mint: #2ec4b6;
+      --mint-dark: #1fa99a;
+      --mint-soft: #e8fbf8;
+      --bg: #f6fbfa;
+      --card: #ffffff;
+      --border: #dbeceb;
+      --text: #1f2937;
+      --muted: #6b7280;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --success: #10b981;
+      --shadow: 0 10px 28px rgba(31, 41, 55, 0.08);
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
+
+    .layout {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+    }
+
+    .sidebar {
+      background: linear-gradient(180deg, var(--mint-dark), var(--mint));
+      color: #fff;
+      padding: 22px 18px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    .brand {
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding-bottom: 18px;
+    }
+
+    .brand h1 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      font-weight: 800;
+    }
+
+    .brand p {
+      margin: 0;
+      font-size: 13px;
+      line-height: 1.5;
+      opacity: 0.95;
+    }
+
+    .nav-link {
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.14);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 700;
+  text-align: left;
+  margin-bottom: 10px;
+  text-decoration: none;
+  display: block;
+}
+
+.nav-link.active,
+.nav-link:hover {
+  background: #fff;
+  color: var(--mint-dark);
+}
+
+    .sidebar-note {
+      margin-top: auto;
+      background: rgba(255,255,255,0.14);
+      border-radius: 16px;
+      padding: 14px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .content {
+      padding: 24px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .title h2 {
+      margin: 0;
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    .title p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pill {
+      background: #fff;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 10px 14px;
+      color: var(--muted);
+      font-size: 13px;
+      box-shadow: var(--shadow);
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .kpi {
+      padding: 20px;
+    }
+
+    .kpi .label {
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: .05em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .kpi .value {
+      font-size: 34px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .kpi .sub {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .toolbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 14px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+    }
+
+    .toolbar-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    input, select {
+      border: 1px solid var(--border);
+      background: #fff;
+      border-radius: 12px;
+      padding: 11px 14px;
+      font-size: 14px;
+      outline: none;
+      min-width: 120px;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 12px;
+      padding: 11px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-outline {
+      background: #fff;
+      color: var(--mint-dark);
+      border: 1px solid var(--border);
+    }
+
+    .panel {
+      padding: 18px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 15px 12px;
+      text-align: left;
+      border-bottom: 1px solid #eef4f3;
+      font-size: 14px;
+      vertical-align: middle;
+    }
+
+    th {
+      font-size: 12px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 7px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .badge.running { background: rgba(16,185,129,.12); color: var(--success); }
+    .badge.stopped { background: rgba(156,163,175,.14); color: #6b7280; }
+    .badge.normal { background: rgba(46,196,182,.12); color: var(--mint-dark); }
+    .badge.warning { background: rgba(245,158,11,.12); color: var(--warning); }
+    .badge.critical { background: rgba(239,68,68,.12); color: var(--danger); }
+
+    .loading {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .detail-link {
+      display: inline-block;
+      padding: 8px 12px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: #fff;
+      background: var(--mint);
+      font-weight: 700;
+    }
+
+    @media (max-width: 1200px) {
+      .grid-4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 860px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { position: relative; height: auto; }
+      .grid-4 { grid-template-columns: 1fr; }
+      table { display: block; overflow-x: auto; }
+    }
+  </style>
+</head>
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">
+        <h1>Engine AI Monitor</h1>
+       
+      </div>
+
+     <div>
+         <a class="nav-link active" href="/">Trang chủ</a>
+          <a class="nav-link" href="/detail">Chi tiết engine</a>
+    </div>
+      <div class="sidebar-note">
+        <div><strong>RUL:</strong> RF + GRU</div>
+        <div><strong>Anomaly:</strong> LSTM Autoencoder</div>
+        <div><strong>Data:</strong> test_FD001</div>
+      </div>
+    </aside>
+
+    <main class="content">
+      <div class="topbar">
+        <div class="title">
+          <h2>Trang chủ</h2>
+          <p>Danh sách engine, trạng thái dừng, anomaly status và truy cập sang trang chi tiết.</p>
+        </div>
+        <div class="pill">Kết nối Flask API</div>
+      </div>
+
+      <div class="grid-4">
+        <div class="card kpi">
+          <div class="label">Tổng engine</div>
+          <div class="value" id="kpiTotal">0</div>
+          <div class="sub">Từ dữ liệu test FD001</div>
+        </div>
+        <div class="card kpi">
+          <div class="label">Running</div>
+          <div class="value" id="kpiRunning">0</div>
+          <div class="sub">Engine đang hoạt động</div>
+        </div>
+        <div class="card kpi">
+          <div class="label">Warning</div>
+          <div class="value" id="kpiWarning">0</div>
+          <div class="sub">Có dấu hiệu bất ổn</div>
+        </div>
+        <div class="card kpi">
+          <div class="label">Critical</div>
+          <div class="value" id="kpiCritical">0</div>
+          <div class="sub">Cần chú ý ngay</div>
+        </div>
+      </div>
+
+      <div class="card panel">
+        <div class="toolbar">
+          <div class="toolbar-group">
+            <input id="searchEngine" type="text" placeholder="Tìm engine..." />
+            <select id="filterRun">
+              <option value="all">Tất cả run status</option>
+              <option value="running">Running</option>
+              <option value="stopped">Stopped</option>
+            </select>
+            <select id="filterAlert">
+              <option value="all">Tất cả anomaly</option>
+              <option value="Normal">Normal</option>
+              <option value="Warning">Warning</option>
+              <option value="Critical">Critical</option>
+              <option value="Not enough data">Not enough data</option>
+              <option value="No data">No data</option>
+            </select>
+          </div>
+          <div class="toolbar-group">
+            <button class="btn btn-outline" id="refreshBtn">Làm mới</button>
+          </div>
+        </div>
+
+        <div id="homeLoading" class="loading">Đang tải danh sách engine...</div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Engine</th>
+              <th>Run status</th>
+              <th>AE status</th>
+              <th>Cycle</th>
+              <th>Anomaly score</th>
+              <th>RUL gần nhất</th>
+              <th>Chi tiết</th>
+            </tr>
+          </thead>
+          <tbody id="engineTableBody"></tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const API = "http://127.0.0.1:5000";
+    let engines = [];
+
+    async function fetchJSON(url, options = null) {
+      const res = await fetch(url, options);
+      return res.json();
+    }
+
+    function badgeClassFromAeStatus(status) {
+      const s = (status || "").toLowerCase();
+      if (s === "warning") return "warning";
+      if (s === "critical") return "critical";
+      return "normal";
+    }
+
+    function renderEngineTable() {
+      const tbody = document.getElementById("engineTableBody");
+      const searchValue = document.getElementById("searchEngine").value.trim().toLowerCase();
+      const runFilter = document.getElementById("filterRun").value;
+      const alertFilter = document.getElementById("filterAlert").value;
+
+      tbody.innerHTML = "";
+
+      let filtered = engines.filter(e => {
+        const engineMatch = String(e.engine_id).toLowerCase().includes(searchValue);
+        const runStatus = e.running ? "running" : "stopped";
+        const runMatch = runFilter === "all" ? true : runStatus === runFilter;
+        const alertMatch = alertFilter === "all" ? true : (e.ae_status || "") === alertFilter;
+        return engineMatch && runMatch && alertMatch;
+      });
+
+      filtered.forEach(e => {
+        const row = document.createElement("tr");
+
+        const runStatus = e.running ? "running" : "stopped";
+        const anomalyText = e.anomaly_score !== null && e.anomaly_score !== undefined
+          ? Number(e.anomaly_score).toFixed(6)
+          : "--";
+
+        const rulText = e.latest_rul !== null && e.latest_rul !== undefined
+          ? Number(e.latest_rul).toFixed(2)
+          : "--";
+
+        row.innerHTML = `
+          <td>Engine ${e.engine_id}</td>
+          <td><span class="badge ${runStatus}">${runStatus}</span></td>
+          <td><span class="badge ${badgeClassFromAeStatus(e.ae_status)}">${e.ae_status || "Normal"}</span></td>
+          <td>${e.cycle}</td>
+          <td>${anomalyText}</td>
+          <td>${rulText}</td>
+          <td><a class="detail-link" href="/detail?engine_id=${encodeURIComponent(e.engine_id)}">Chi tiết</a></td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      document.getElementById("kpiTotal").textContent = engines.length;
+      document.getElementById("kpiRunning").textContent = engines.filter(e => e.running).length;
+      document.getElementById("kpiWarning").textContent = engines.filter(e => (e.ae_status || "") === "Warning").length;
+      document.getElementById("kpiCritical").textContent = engines.filter(e => (e.ae_status || "") === "Critical").length;
+    }
+
+    async function loadEngines() {
+      document.getElementById("homeLoading").style.display = "block";
+      try {
+        engines = await fetchJSON(`${API}/engines`);
+        renderEngineTable();
+      } catch (error) {
+        console.error(error);
+        document.getElementById("engineTableBody").innerHTML = `
+          <tr><td colspan="7">Không tải được danh sách engine.</td></tr>
+        `;
+      } finally {
+        document.getElementById("homeLoading").style.display = "none";
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadEngines();
+
+      document.getElementById("refreshBtn").addEventListener("click", loadEngines);
+      document.getElementById("searchEngine").addEventListener("input", renderEngineTable);
+      document.getElementById("filterRun").addEventListener("change", renderEngineTable);
+      document.getElementById("filterAlert").addEventListener("change", renderEngineTable);
+
+      
+
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) loadEngines();
+      });
+    });
+  </script>
+</body>
+</html>
