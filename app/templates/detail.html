@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Engine Monitor - Detail</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='chatbox.css') }}">
   <style>
     :root {
       --mint: #2ec4b6;
@@ -257,13 +258,12 @@
       color: var(--muted);
       font-size: 12px;
       text-transform: uppercase;
-      font-weight: 800;
       margin-bottom: 8px;
     }
 
     .mini-card .value {
       font-size: 30px;
-      font-weight: 800;
+      
     }
 
     .triple-grid {
@@ -284,13 +284,13 @@
       color: var(--muted);
       font-size: 12px;
       text-transform: uppercase;
-      font-weight: 800;
+    
       letter-spacing: .05em;
     }
 
     .metric-box .big {
       font-size: 24px;
-      font-weight: 800;
+     
     }
 
     .section-note {
@@ -352,14 +352,14 @@
 
     .sensor-realtime-name {
       font-size: 14px;
-      font-weight: 800;
+    
       color: var(--text);
       line-height: 1.4;
     }
 
     .sensor-realtime-sub {
       font-size: 11px;
-      font-weight: 700;
+    
       text-transform: uppercase;
       color: var(--muted);
       margin-top: 2px;
@@ -368,7 +368,7 @@
 
     .sensor-realtime-value {
       font-size: 20px;
-      font-weight: 800;
+      
       color: var(--text);
       white-space: nowrap;
     }
@@ -436,7 +436,8 @@
     }
   </style>
 </head>
-<body>
+
+<body data-page="detail" data-engine-id="{{ engine_id }}">
   <div class="layout">
     <aside class="sidebar">
       <div class="brand">
@@ -594,6 +595,39 @@
       </div>
     </main>
   </div>
+  <!-- ===== CHAT BOX ===== -->
+<div id="ai-assistant-launcher" class="shake-soft">
+  <div id="ai-assistant-bubble">KDZ luôn sẵn sàng hỗ trợ bạn</div>
+
+  <button id="ai-assistant-avatar" onclick="toggleChatWidget()">
+    <img src="{{ url_for('static', filename='image/kdz-bot.png') }}" class="ai-avatar-image">
+  </button>
+</div>
+
+<div id="ai-chat-widget" class="collapsed">
+  <div id="ai-chat-header">
+    <div class="ai-chat-header-left">
+      <div class="ai-chat-bot-mini">
+        <img src="{{ url_for('static', filename='image/kdz-bot.png') }}" class="ai-chat-bot-image">
+      </div>
+      <div>
+        <div class="ai-chat-title">KDZ Assistant</div>
+        <div class="ai-chat-subtitle">Luôn sẵn sàng hỗ trợ</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="ai-chat-messages"></div>
+
+  <div id="ai-chat-input-row">
+    <input id="ai-chat-input" type="text" placeholder="Hỏi gì cũng được..." />
+    <button onclick="sendChatMessage()">Gửi</button>
+  </div>
+
+  <div id="ai-chat-minimize-row">
+    <button onclick="minimizeChatWidget()">⌄</button>
+  </div>
+</div>
 
   <script>
     const API = "http://127.0.0.1:5000";
@@ -1053,5 +1087,6 @@
       document.getElementById("predictBtn").addEventListener("click", predictRUL);
     });
   </script>
+  <script src="{{ url_for('static', filename='chatbox.js') }}"></script>
 </body>
 </html>

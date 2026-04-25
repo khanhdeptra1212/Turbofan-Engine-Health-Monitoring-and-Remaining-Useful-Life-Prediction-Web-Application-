@@ -6,6 +6,11 @@ import threading
 import smtplib
 import ssl
 from email.message import EmailMessage
+from app.routes.chat_routes import chat_bp
+from app.services.engine_state_store import EngineStateStore, set_engine_store
+
+
+
 
 import numpy as np
 import pandas as pd
@@ -19,6 +24,7 @@ CORS(app)
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
+app.register_blueprint(chat_bp)
 
 # =====================
 # PATHS
@@ -90,6 +96,7 @@ gru_config = joblib.load(GRU_CONFIG_PATH)
 ae_model = tf.keras.models.load_model(AE_MODEL_PATH)
 ae_config = joblib.load(AE_CONFIG_PATH)
 
+
 # =====================
 # FEATURE CONFIG
 # =====================
@@ -134,6 +141,26 @@ sensor_cols = [
     col for col in df.columns
     if col not in base_exclude_cols and col not in op_cols
 ]
+engine_store = EngineStateStore(
+    df=df,
+    rf_model=rf_model,
+    rf_scaler=rf_scaler,
+    rf_feature_cols=rf_feature_cols,
+    gru_model=gru_model,
+    gru_scaler=gru_scaler,
+    gru_feature_cols=gru_feature_cols,
+    gru_seq_len=GRU_SEQ_LEN,
+    ae_model=ae_model,
+    ae_scaler=ae_scaler,
+    ae_feature_cols=ae_feature_cols,
+    ae_seq_len=AE_SEQ_LEN,
+    warning_th=float(ae_config["warning_th"]),
+    critical_th=float(ae_config["critical_th"]),
+    op_cols=op_cols,
+    sensor_cols=sensor_cols,
+)
+
+set_engine_store(engine_store)
 
 # =====================
 # UTILS

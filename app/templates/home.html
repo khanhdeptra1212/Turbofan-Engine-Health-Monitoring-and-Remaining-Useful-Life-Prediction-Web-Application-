@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Engine Monitor - Home</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='chatbox.css') }}">
   <style>
     :root {
       --mint: #2ec4b6;
@@ -371,6 +372,45 @@
         </table>
       </div>
     </main>
+
+  </div>
+  <div id="ai-assistant-launcher" class="shake-soft">
+    <div id="ai-assistant-bubble">KDZ luôn sẵn sàng hỗ trợ bạn</div>
+
+    <button id="ai-assistant-avatar" type="button" onclick="toggleChatWidget()">
+      <img src="{{ url_for('static', filename='image/kdz-bot.png') }}" alt="KDZ Bot" class="ai-avatar-image">
+    </button>
+  </div>
+
+  <div id="ai-chat-widget" class="collapsed">
+    <div id="ai-chat-header">
+      <div class="ai-chat-header-left">
+        <div class="ai-chat-bot-mini">
+          <img src="{{ url_for('static', filename='image/kdz-bot.png') }}"  class="ai-chat-bot-image">
+        </div>
+        <div>
+          <div class="ai-chat-title">KDZ Assistant</div>
+          <div class="ai-chat-subtitle">Luôn sẵn sàng hỗ trợ</div>
+        </div>
+      </div>
+    </div>
+
+    <div id="ai-chat-suggestions">
+      <button onclick="quickAsk('Engine nào nguy hiểm nhất?')">Nguy hiểm nhất</button>
+      <button onclick="quickAsk('Có engine nào critical không?')">Engine critical</button>
+      <button onclick="quickAsk('Engine 3 đang thế nào?')">Engine 3</button>
+    </div>
+
+    <div id="ai-chat-messages"></div>
+
+    <div id="ai-chat-input-row">
+      <input id="ai-chat-input" type="text" placeholder="Hỏi về engine, RUL, warning..." />
+      <button id="ai-chat-send" onclick="sendChatMessage()">Gửi</button>
+    </div>
+
+    <div id="ai-chat-minimize-row">
+      <button id="ai-chat-minimize" type="button" onclick="minimizeChatWidget()">⌄</button>
+    </div>
   </div>
 
   <script>
@@ -465,5 +505,7 @@
       });
     });
   </script>
+
+  <script src="{{ url_for('static', filename='chatbox.js') }}"></script>
 </body>
 </html>
