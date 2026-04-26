@@ -5,6 +5,7 @@ import atexit
 import threading
 import smtplib
 import ssl
+from dotenv import load_dotenv
 from email.message import EmailMessage
 from app.routes.chat_routes import chat_bp
 from app.services.engine_state_store import EngineStateStore, set_engine_store
@@ -25,6 +26,13 @@ CORS(app)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_DIR = os.path.dirname(BASE_DIR)
 app.register_blueprint(chat_bp)
+ENV_PATH = os.path.join(PROJECT_DIR, ".env")
+load_dotenv(ENV_PATH)
+
+print("ENV_PATH:", ENV_PATH)
+print("GMAIL_USER:", os.getenv("GMAIL_USER"))
+print("ALERT_TO:", os.getenv("ALERT_TO"))
+print("HAS_GMAIL_PASSWORD:", bool(os.getenv("GMAIL_APP_PASSWORD")))
 
 # =====================
 # PATHS
@@ -41,6 +49,7 @@ AE_CONFIG_PATH = os.path.join(PROJECT_DIR, "model", "ae_pipeline", "config.pkl")
 
 TEST_DATA_PATH = os.path.join(PROJECT_DIR, "data_csv", "test_FD001.csv")
 STATE_PATH = os.path.join(PROJECT_DIR, "engine_runtime_state.json")
+
 
 print("BASE_DIR:", BASE_DIR)
 print("PROJECT_DIR:", PROJECT_DIR)
@@ -263,6 +272,11 @@ def send_gmail_alert(subject, body):
     gmail_app_password = os.getenv("GMAIL_APP_PASSWORD")
     alert_to = os.getenv("ALERT_TO", gmail_user)
 
+    print("=== Gmail Debug ===")
+    print("GMAIL_USER:", gmail_user)
+    print("ALERT_TO:", alert_to)
+    print("HAS_PASSWORD:", bool(gmail_app_password))
+
     if not gmail_user or not gmail_app_password or not alert_to:
         print("Gmail alert skipped: missing GMAIL_USER / GMAIL_APP_PASSWORD / ALERT_TO")
         return False
@@ -273,12 +287,18 @@ def send_gmail_alert(subject, body):
     msg["To"] = alert_to
     msg.set_content(body)
 
-    context = ssl.create_default_context()
-    with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
-        server.login(gmail_user, gmail_app_password)
-        server.send_message(msg)
+    try:
+        context = ssl.create_default_context()
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465, context=context) as server:
+            server.login(gmail_user, gmail_app_password)
+            server.send_message(msg)
 
-    return True
+        print("Gmail alert sent successfully")
+        return True
+
+    except Exception as e:
+        print("Gmail alert failed:", e)
+        return False
 
 # =====================
 # RUNTIME STATE
